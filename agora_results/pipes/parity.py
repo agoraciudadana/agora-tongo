@@ -103,7 +103,7 @@ def __get_proportional_group(l, l_men, l_women, proportions):
     return sorted(ret_list, reverse=True, key=itemgetter('total_count'))
 
 
-def first_positions_question_parity(data_list, questions_data):
+def first_positions_question_parity(data_list, questions_data, help=""):
     '''
     This function solves the "parity issue" of having multiple questions with
     the first winner being of the same sex. To solve this, it's checked that
@@ -151,25 +151,35 @@ def first_positions_question_parity(data_list, questions_data):
             for answer in qdata['question']['answers']
             if answer['winner_position'] == 0
         ]
-        qdata['first_winner'] = first_winner
-        qdata['sort_val'] = first_winner['total_count'] * qdata['multiplicator']
+        qdata['first_winner'] = first_winner[0]
+        qdata['sort_val'] = first_winner[0]['total_count'] * qdata['multiplicator']
         return first_winner[0]['text'] in qdata['women_names']
 
     def filter_women_1st_winners(questions_data):
-        [qdata for qdata in questions_data if is_woman_1st_winner(qdata)]
+        return [qdata for qdata in questions_data if is_woman_1st_winner(qdata)]
 
     def filter_men_1st_winners(questions_data):
-        [qdata for qdata in questions_data if not is_woman_1st_winner(qdata)]
+        return [qdata for qdata in questions_data if not is_woman_1st_winner(qdata)]
 
-    def swap_1st_2nd_positions(questions_data):
+    def force_first_sex_change(data_list, questions_data):
+        '''
+        Reapplies zip sex parity changing the first winner position in a list of
+        questions
+        '''
+        # if it's a woman, change it to a man
         for qdata in questions_data:
-            second_winner = [
-                answer
-                for answer in qdata['question']['answers']
-                if answer['winner_position'] == 1
-            ]
-            qdata['first_winner']['winner_position'] = 1
-            second_winner['winner_position'] = 0
+            if qdata['first_winner']['text'] in qdata['women_names']:
+                force_first = 'man'
+            else:
+                force_first = 'woman'
+
+            election_index = qdata['election_index']
+            question_index = qdata['question_index']
+            parity_zip_non_iterative(
+                data_list=[data_list[election_index]],
+                question_indexes=[question_index],
+                force_first=force_first,
+                women_names=None)
 
     get_questions(questions_data)
     max_same_sex = len(questions_data) / 2.0
@@ -180,16 +190,17 @@ def first_positions_question_parity(data_list, questions_data):
     if num_women_qs == max_same_sex:
         return
 
+    val_getter = lambda d: d['sort_val']
     if num_women_qs > max_same_sex:
-        num_corrections = (num_women_qs - max_same_sex)
-        sorted_women_qs = sorted(women_qs, key='sort_val', reverse=True)
+        num_corrections = int(num_women_qs - max_same_sex)
+        sorted_women_qs = sorted(women_qs, key=val_getter, reverse=True)
         women_qs_to_correct = sorted_women_qs[-num_corrections:]
-        swap_1st_2nd_positions(women_qs_to_correct)
+        force_first_sex_change(data_list, women_qs_to_correct)
     else:
-        num_corrections = (max_same_sex - num_women_qs)
-        sorted_men_qs = sorted(men_qs, key='sort_val', reverse=True)
+        num_corrections = int(max_same_sex - num_women_qs)
+        sorted_men_qs = sorted(men_qs, key=val_getter, reverse=True)
         men_qs_to_correct = sorted_men_qs[-num_corrections:]
-        swap_1st_2nd_positions(men_qs_to_correct)
+        force_first_sex_change(data_list, men_qs_to_correct)
 
 def proportion_rounded(data_list, women_names, proportions,
                        add_missing_from_unbalanced_sex=False,
@@ -287,7 +298,12 @@ def proportion_rounded(data_list, women_names, proportions,
         for answer, i in zip(winners, range(len(winners))):
             answer['winner_position'] = i
 
-def parity_zip_non_iterative(data_list, women_names, question_indexes=None, help=""):
+def parity_zip_non_iterative(
+    data_list,
+    women_names,
+    question_indexes=None,
+    force_first=None,
+    help=""):
     '''
     Given a list of women names, sort the winners creating two lists, women and
     men, and then zip the list one man, one woman, one man, one woman.
@@ -299,16 +315,21 @@ def parity_zip_non_iterative(data_list, women_names, question_indexes=None, help
     winners were in a single question. This means that if the previous question
     last winner is a women, next question first winner will be a man and so on.
 
+    force_first can be used to force the first element to be one sex or the
+    other. Valid options are 'man' and 'woman'. The rest of the list will follow
+    zip sex order.
+
     NOTE: it assumes the list of answers is already sorted.
     '''
     data = data_list[0]
     lastq_is_woman = None
 
     for qindex, question in enumerate(data['results']['questions']):
-        if women_names == None:
-            women_names = __get_women_names_from_question(question)
         if question_indexes is not None and qindex not in question_indexes:
             continue
+
+        if women_names == None:
+            women_names = __get_women_names_from_question(question)
 
         if question['tally_type'] not in ["plurality-at-large", "borda", "borda-nauru", "pairwise-beta"] or len(question['answers']) == 0:
             continue
@@ -329,6 +350,9 @@ def parity_zip_non_iterative(data_list, women_names, question_indexes=None, help
         # then remove it when processing is done
         if lastq_is_woman is not None:
             if lastq_is_woman == True:
+                women.insert(0, __WOMAN_FLAG)
+        elif force_first is not None:
+            if force_first is 'man' and len(men) > 0:
                 women.insert(0, __WOMAN_FLAG)
         elif len(men) > 0 and men[0]['text'] == question['answers'][0]['text']:
             women.insert(0, __WOMAN_FLAG)

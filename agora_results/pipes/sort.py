@@ -116,3 +116,41 @@ def sort_non_iterative(data_list, question_indexes=[], withdrawals=[], ties_sort
             del answer['tie_sort']
             if answer['winner_position'] is _MAX:
                 answer['winner_position'] = None
+
+def sort_by_winner_position(data_list, questions_data=[], help=""):
+    '''
+    Sort answers by winner_position.
+
+    Example call:
+    first_positions_question_parity(
+      data_list,
+      [
+        dict(
+          election_index=0,
+          question_index=0
+        ),
+        dict(
+          election_index=0,
+          question_index=1
+        )
+      ]
+    )
+
+    Assumptions:
+      - tally has already been applied with a resulting score to the involved
+        questions
+    '''
+    def winner_pos_getter(answer):
+        if answer['winner_position'] is None:
+            return _MAX
+        else:
+            return answer['winner_position']
+
+    for qdata in questions_data:
+        election_index = qdata['election_index']
+        question_index = qdata['question_index']
+        question = data_list[election_index]['results']['questions'][question_index]
+        question['answers'] = sorted(
+            question['answers'],
+            key=winner_pos_getter
+        )
