@@ -102,6 +102,95 @@ def __get_proportional_group(l, l_men, l_women, proportions):
     ret_list = ret_list + candidates[:max_diff]
     return sorted(ret_list, reverse=True, key=itemgetter('total_count'))
 
+
+def first_positions_question_parity(data_list, questions_data):
+    '''
+    This function solves the "parity issue" of having multiple questions with
+    the first winner being of the same sex. To solve this, it's checked that
+    half of the candidates are of each sex, and if they are not, each first
+    position candidate of the majority sex is evaluated with a value function,
+    and those with less value swap their position with the second winner in
+    their respective questions. The function used to calculate this value is
+    their score multiplicated with a factor provided in questions_data.
+
+    Example call:
+
+    first_positions_question_parity(
+      data_list,
+      [
+        dict(
+          election_index=0,
+          question_index=0,
+          multiplicator=0.5
+        ),
+        dict(
+          election_index=0,
+          question_index=1,
+          multiplicator=0.5
+        )
+      ]
+    )
+
+    Assumptions:
+      - tally has already been applied with a resulting score to the involved
+        questions
+      - zip sex parity has already been applied to the involved questions
+      - sex of each candidate is provided in each answer
+    '''
+    def get_questions(questions_data):
+        for qdata in questions_data:
+            election_index = qdata['election_index']
+            question_index = qdata['question_index']
+            question = data_list[election_index]['results']['questions'][question_index]
+            qdata['question'] = question
+            qdata['women_names'] = __get_women_names_from_question(question)
+
+    def is_woman_1st_winner(qdata):
+        first_winner = [
+            answer
+            for answer in qdata['question']['answers']
+            if answer['winner_position'] == 0
+        ]
+        qdata['first_winner'] = first_winner
+        qdata['sort_val'] = first_winner['total_count'] * qdata['multiplicator']
+        return first_winner[0]['text'] in qdata['women_names']
+
+    def filter_women_1st_winners(questions_data):
+        [qdata for qdata in questions_data if is_woman_1st_winner(qdata)]
+
+    def filter_men_1st_winners(questions_data):
+        [qdata for qdata in questions_data if not is_woman_1st_winner(qdata)]
+
+    def swap_1st_2nd_positions(questions_data):
+        for qdata in questions_data:
+            second_winner = [
+                answer
+                for answer in qdata['question']['answers']
+                if answer['winner_position'] == 1
+            ]
+            qdata['first_winner']['winner_position'] = 1
+            second_winner['winner_position'] = 0
+
+    get_questions(questions_data)
+    max_same_sex = len(questions_data) / 2.0
+    women_qs = filter_women_1st_winners(questions_data)
+    men_qs = filter_men_1st_winners(questions_data)
+    num_women_qs = len(women_qs)
+
+    if num_women_qs == max_same_sex:
+        return
+
+    if num_women_qs > max_same_sex:
+        num_corrections = (num_women_qs - max_same_sex)
+        sorted_women_qs = sorted(women_qs, key='sort_val', reverse=True)
+        women_qs_to_correct = sorted_women_qs[-num_corrections:]
+        swap_1st_2nd_positions(women_qs_to_correct)
+    else:
+        num_corrections = (max_same_sex - num_women_qs)
+        sorted_men_qs = sorted(men_qs, key='sort_val', reverse=True)
+        men_qs_to_correct = sorted_men_qs[-num_corrections:]
+        swap_1st_2nd_positions(men_qs_to_correct)
+
 def proportion_rounded(data_list, women_names, proportions,
                        add_missing_from_unbalanced_sex=False,
                        question_indexes=None,
