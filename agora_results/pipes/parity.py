@@ -151,8 +151,15 @@ def first_positions_question_parity(data_list, questions_data, help=""):
             for answer in qdata['question']['answers']
             if answer['winner_position'] == 0
         ]
+        second_winner = [
+            answer
+            for answer in qdata['question']['answers']
+            if answer['winner_position'] == 1
+        ]
         qdata['first_winner'] = first_winner[0]
-        qdata['sort_val'] = first_winner[0]['total_count'] * qdata['multiplicator']
+        qdata['sort_val'] = (
+            first_winner[0]['total_count'] -  second_winner[0]['total_count']
+        ) * qdata['multiplicator']
         return first_winner[0]['text'] in qdata['women_names']
 
     def filter_women_1st_winners(questions_data):
