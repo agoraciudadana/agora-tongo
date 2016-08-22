@@ -17,12 +17,24 @@ import os
 import json
 import tempfile
 import shutil
+import copy
 from agora_results.utils.deterministic_tar import deterministic_tar_open, deterministic_tar_add
 
 
 def tar_tallies(data_list, config, tar_list, destdir, eid):
     results_config = json.dumps(config)
-    results = json.dumps(data_list[0]['results'], indent=4, ensure_ascii=False, sort_keys=True, separators=(',', ': '))
+    data = copy.deepcopy(data_list[0]['results'])
+
+    # results_dirname cannot appear because otherwise agora-verifier will fail
+    if 'results_dirname' in data:
+        del data['results_dirname']
+
+    results = json.dumps(
+        data,
+        indent=4,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(',', ': '))
 
     tempdir = tempfile.mkdtemp()
     results_path = os.path.join(tempdir, "%d.results.json" % eid)
