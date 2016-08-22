@@ -121,7 +121,8 @@ def first_positions_question_parity(data_list, questions_data, help=""):
         dict(
           election_index=0,
           question_index=0,
-          multiplicator=0.5
+          multiplicator=0.5,
+          force_first="man"
         ),
         dict(
           election_index=0,
@@ -175,7 +176,9 @@ def first_positions_question_parity(data_list, questions_data, help=""):
         '''
         # if it's a woman, change it to a man
         for qdata in questions_data:
-            if qdata['first_winner']['text'] in qdata['women_names']:
+            if 'force_first' in qdata:
+                force_first = qdata['force_first']
+            elif qdata['first_winner']['text'] in qdata['women_names']:
                 force_first = 'man'
             else:
                 force_first = 'woman'
@@ -198,16 +201,17 @@ def first_positions_question_parity(data_list, questions_data, help=""):
         return
 
     val_getter = lambda d: d['sort_val']
+    forced_first = [qdata for qdata in questions_data if 'force_first' in qdata]
     if num_women_qs > max_same_sex:
         num_corrections = int(num_women_qs - max_same_sex)
         sorted_women_qs = sorted(women_qs, key=val_getter, reverse=True)
         women_qs_to_correct = sorted_women_qs[-num_corrections:]
-        force_first_sex_change(data_list, women_qs_to_correct)
+        force_first_sex_change(data_list, women_qs_to_correct + forced_first)
     else:
         num_corrections = int(max_same_sex - num_women_qs)
         sorted_men_qs = sorted(men_qs, key=val_getter, reverse=True)
         men_qs_to_correct = sorted_men_qs[-num_corrections:]
-        force_first_sex_change(data_list, men_qs_to_correct)
+        force_first_sex_change(data_list, men_qs_to_correct + forced_first)
 
 def proportion_rounded(data_list, women_names, proportions,
                        add_missing_from_unbalanced_sex=False,
