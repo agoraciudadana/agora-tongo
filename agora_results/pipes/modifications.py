@@ -192,6 +192,9 @@ def apply_modifications(data_list, modifications=[], help="this-parameter-is-ign
         elif modif['action'] == "set-title":
             qjson[qindex]['title'] = modif['title']
 
+        elif modif['action'] == "set-question-description":
+            qjson[qindex]['description'] = modif['description']
+
         elif modif['action'] == "set-max":
             qjson[qindex]['max'] = modif['max']
 
