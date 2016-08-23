@@ -189,11 +189,17 @@ def apply_modifications(data_list, modifications=[], help="this-parameter-is-ign
         elif modif['action'] == "set-min":
             qjson[qindex]['min'] = modif['min']
 
-        elif modif['action'] == "set-title":
+        elif modif['action'] == "set-question-title":
             qjson[qindex]['title'] = modif['title']
 
         elif modif['action'] == "set-question-description":
             qjson[qindex]['description'] = modif['description']
+
+        elif modif['action'] == "set-election-description":
+            qjson['description'] = modif['description']
+
+        elif modif['action'] == "set-election-title":
+            qjson['title'] = modif['title']
 
         elif modif['action'] == "set-max":
             qjson[qindex]['max'] = modif['max']
