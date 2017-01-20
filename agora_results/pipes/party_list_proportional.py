@@ -60,7 +60,7 @@ def enma_2(data_list, question_indexes=None, women_names=None):
             Calculates the decimal part of the points over the total votes for
             a list.
             '''
-            val = list_points / total_votes
+            val = float(list_points) / total_votes
             return val - int(val)
 
         for cat, cat_answers in answers_grouped:
@@ -69,7 +69,8 @@ def enma_2(data_list, question_indexes=None, women_names=None):
                 points=cat_answers[0]['total_count'],
                 seats=int(seats(cat_answers[0]['total_count'])),
                 fraction_points=fraction_points(cat_answers[0]['total_count']),
-                answers=cat_answers
+                answers=cat_answers,
+                cat_name=cat
             )
 
         # this is the number of seats in dispute
@@ -85,8 +86,12 @@ def enma_2(data_list, question_indexes=None, women_names=None):
         # finally, mark winners per list
         winner_pos = 0
         for l in lists_l:
+            if len(l['answers']) < l['seats']:
+                print("giving to list %s only %d seats (all candidates) instead of %d" % (
+                    l['cat_name'], len(l['answers']), l['seats']))
+                l['seats'] = len(l['answers'])
             for i, answer in enumerate(l['answers']):
-                if i <= l['seats']:
+                if i < l['seats']:
                     answer['winner_position'] = winner_pos
                     winner_pos += 1
                 else:
@@ -105,12 +110,16 @@ def enma_2(data_list, question_indexes=None, women_names=None):
 
         if len(women) <= len(men):
             print("too many men")
+            lists_l.sort(key=operator.itemgetter('points'), reverse=True)
             if lists_l[0]['points'] == lists_l[1]['points']:
                 print("Oops, we need to take back last man seat from the most voted list to give it to the next woman, but there's a tie in the number of points of the first two lists")
             l = lists_l[0]
             total = l['seats']
             l['answers'][total-1]['winner_position'] = None
-            l['answers'][total]['winner_position'] = total-1
+            if len(l['answers']) > total:
+                l['answers'][total]['winner_position'] = total-1
+            else:
+                print("not assigning the seat #%d because the list doesn't have any more women" % (total-1))
 
 if __name__ == '__main__':
     '''
