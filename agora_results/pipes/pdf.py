@@ -100,7 +100,7 @@ def _header_footer(canvas, doc):
     header = Image('/home/agoraelections/agora-results/img/nvotes_logo.jpg', height = 20, width = 80)
     header.hAlign = 'RIGHT'
     w, h = header.wrap(doc.width, doc.topMargin)
-    header.drawOn(canvas, doc.width - w + doc.rightMargin, doc.height + h + doc.bottomMargin - doc.topMargin)
+    header.drawOn(canvas, doc.width - w + doc.rightMargin, doc.height + h + doc.bottomMargin)
 
     # Footer
     #footer = Paragraph('This is a multi-line footer.  It goes on every page.' * 5, styles['Normal'])
@@ -115,7 +115,7 @@ def pdf_print(election_results, config_folder, election_id):
 
     pdf_path = os.path.join(config_folder, "%s.results.pdf" % election_id)
     styleSheet = getSampleStyleSheet()
-    doc = SimpleDocTemplate(pdf_path, rightMargin=50,leftMargin=50, topMargin=35,bottomMargin=80)
+    doc = SimpleDocTemplate(pdf_path, rightMargin=50,leftMargin=50, topMargin=90,bottomMargin=80)
     elements = []
     tx_title = 'Resultados del escrutinio de la votación %d - %s'
     tx_description = 'A continuación se detallan, pregunta por pregunta, los resultados de la votación %d titulada <u>"%s"</u> realizada con <font color="blue"><u><a href ="https://www.nvotes.com">nVotes</a></u></font>, que una vez publicados podrán ser verificados en su página pública de votación.'
@@ -233,14 +233,6 @@ def pdf_print(election_results, config_folder, election_id):
           [
             gen_text('Número total de votos válidos (a opciones)', align = TA_RIGHT),
             gen_text("%d (%0.2f%% sobre el número total de votos)" % (valid_votes, get_percentage(valid_votes, total_votes)), align = TA_LEFT)
-          ],
-          [
-            gen_text('Fecha de inicio del período de recuento', align = TA_RIGHT),
-            gen_text(str(datetime.strptime(jsonconfig['payload']['startDate'], '%Y-%m-%dT%H:%M:%S.%f')), align = TA_LEFT)
-          ],
-          [
-            gen_text('Fecha de fin del período de recuento', align = TA_RIGHT),
-            gen_text(str(datetime.strptime(jsonconfig['payload']['endDate'], '%Y-%m-%dT%H:%M:%S.%f')), align = TA_LEFT)
           ],
           [
             gen_text('Fecha de finalización del escrutinio', align = TA_RIGHT),
