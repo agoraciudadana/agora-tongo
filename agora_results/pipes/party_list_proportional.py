@@ -18,7 +18,7 @@
 import itertools
 import operator
 
-def enma_2(data_list, question_indexes=None):
+def enma_2(data_list, question_indexes=None, women_names=None):
     '''
     This is a party-list proportional representation method needed for the
     electoral process named ENMA-2. When there is a seat in dispute between
@@ -92,9 +92,29 @@ def enma_2(data_list, question_indexes=None):
                 else:
                     answer['winner_position'] = None
 
+        def filter_women(l, women_names):
+          return [a for a in l if a['text'] in women_names and a['winner_position'] is not None]
+        def filter_men(l, women_names):
+          return [a for a in l if a['text'] not in women_names and a['winner_position'] is not None]
+
+        women = filter_women(question['answers'], women_names)
+        men = filter_men(question['answers'], women_names)
+
+        # if there are too many men, then we take the last elected man out and
+        # insert the first not-elected woman in
+
+        if len(women) <= len(men):
+            print("too many men")
+            if lists_l[0]['points'] == lists_l[1]['points']:
+                print("Oops, we need to take back last man seat from the most voted list to give it to the next woman, but there's a tie in the number of points of the first two lists")
+            l = lists_l[0]
+            total = l['seats']
+            l['answers'][total-1]['winner_position'] = None
+            l['answers'][total]['winner_position'] = total-1
+
 if __name__ == '__main__':
     '''
-    executes some unittests on podemos_parity_loreg_zip_non_iterative.
+    executes some unittests in here.
     '''
     def generate_test_data():
         '''
