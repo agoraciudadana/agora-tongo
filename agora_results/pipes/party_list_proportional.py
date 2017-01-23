@@ -85,6 +85,7 @@ def enma_2(data_list, question_indexes=None, women_names=None):
 
         # finally, mark winners per list
         winner_pos = 0
+        lists_l.sort(key=operator.itemgetter('seats'), reverse=True)
         for l in lists_l:
             if len(l['answers']) < l['seats']:
                 print("giving to list %s only %d seats (all candidates) instead of %d" % (
@@ -116,11 +117,23 @@ def enma_2(data_list, question_indexes=None, women_names=None):
                 print("Oops, we need to take back last man seat from the least voted list to give it to the next woman, but there's a tie in the number of points of the first two lists")
             l = lists_l[0]
             total = l['seats']
-            l['answers'][total-1]['winner_position'] = None
-            if len(l['answers']) > total:
-                l['answers'][total]['winner_position'] = total-1
+            last_men_i = total-1
+            next_woman_i = total
+            if l['answers'][total-1]['text'] in women_names:
+              last_men_i = total-2
+              next_woman_i = total+1
+
+            if last_men_i < 0:
+                print("oops, can't take back any men from last elected list")
+                return
             else:
-                print("not assigning the seat #%d because the list doesn't have any more women" % (total-1))
+                winner_position = l['answers'][last_men_i]['winner_position']
+                l['answers'][last_men_i]['winner_position'] = None
+
+                if len(l['answers']) >= last_woman_i:
+                    l['answers'][next_woman_i]['winner_position'] = winner_position
+                else:
+                  print("not assigning the seat #%d because the list doesn't have any more women" % (total-1))
 
 if __name__ == '__main__':
     '''
