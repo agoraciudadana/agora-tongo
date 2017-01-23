@@ -105,14 +105,15 @@ def enma_2(data_list, question_indexes=None, women_names=None):
         women = filter_women(question['answers'], women_names)
         men = filter_men(question['answers'], women_names)
 
-        # if there are too many men, then we take the last elected man out and
-        # insert the first not-elected woman in
+        # if there are too many men, then we take out the last elected man of the
+        # list elected with less votes and insert the first not-elected woman in
+        # from that list
 
         if len(women) <= len(men):
             print("too many men")
-            lists_l.sort(key=operator.itemgetter('points'), reverse=True)
+            lists_l.sort(key=operator.itemgetter('points'), reverse=False)
             if lists_l[0]['points'] == lists_l[1]['points']:
-                print("Oops, we need to take back last man seat from the most voted list to give it to the next woman, but there's a tie in the number of points of the first two lists")
+                print("Oops, we need to take back last man seat from the least voted list to give it to the next woman, but there's a tie in the number of points of the first two lists")
             l = lists_l[0]
             total = l['seats']
             l['answers'][total-1]['winner_position'] = None
