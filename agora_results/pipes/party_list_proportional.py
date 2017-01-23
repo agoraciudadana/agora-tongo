@@ -119,7 +119,7 @@ def enma_2(data_list, question_indexes=None, women_names=None):
             total = l['seats']
             last_men_i = total-1
             next_woman_i = total
-            if l['answers'][total-1]['text'] in women_names:
+            if l['answers'][last_men_i]['text'] in women_names:
               last_men_i = total-2
               next_woman_i = total+1
 
@@ -130,10 +130,10 @@ def enma_2(data_list, question_indexes=None, women_names=None):
                 winner_position = l['answers'][last_men_i]['winner_position']
                 l['answers'][last_men_i]['winner_position'] = None
 
-                if len(l['answers']) >= last_woman_i:
+                if len(l['answers']) >= next_woman_i:
                     l['answers'][next_woman_i]['winner_position'] = winner_position
                 else:
-                  print("not assigning the seat #%d because the list doesn't have any more women" % (total-1))
+                  print("not assigning the seat #%d because the list doesn't have any more women" % (next_woman_i))
 
 if __name__ == '__main__':
     '''
