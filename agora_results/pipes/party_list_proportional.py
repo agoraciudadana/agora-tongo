@@ -110,6 +110,9 @@ def enma_2(data_list, question_indexes=None, women_names=None):
         # list elected with less votes and insert the first not-elected woman in
         # from that list
 
+	def print(a):
+           pass
+
         if len(women) <= len(men):
             print("too many men")
             lists_l.sort(key=operator.itemgetter('points'), reverse=False)
