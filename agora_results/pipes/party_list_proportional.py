@@ -110,14 +110,14 @@ def enma_2(data_list, question_indexes=None, women_names=None):
         # list elected with less votes and insert the first not-elected woman in
         # from that list
 
-        def print(a):
-           pass
+        def _print(a):
+            pass
 
         if len(women) <= len(men):
-            print("too many men")
+            _print("too many men")
             lists_l.sort(key=operator.itemgetter('points'), reverse=False)
             if lists_l[0]['points'] == lists_l[1]['points']:
-                print("Oops, we need to take back last man seat from the least voted list to give it to the next woman, but there's a tie in the number of points of the first two lists")
+                _print("Oops, we need to take back last man seat from the least voted list to give it to the next woman, but there's a tie in the number of points of the first two lists")
             l = lists_l[0]
             total = l['seats']
             last_men_i = total-1
@@ -127,7 +127,7 @@ def enma_2(data_list, question_indexes=None, women_names=None):
               next_woman_i = total+1
 
             if last_men_i < 0:
-                print("oops, can't take back any men from last elected list")
+                _print("oops, can't take back any men from last elected list")
                 return
             else:
                 winner_position = l['answers'][last_men_i]['winner_position']
@@ -136,7 +136,7 @@ def enma_2(data_list, question_indexes=None, women_names=None):
                 if len(l['answers']) >= next_woman_i:
                     l['answers'][next_woman_i]['winner_position'] = winner_position
                 else:
-                  print("not assigning the seat #%d because the list doesn't have any more women" % (next_woman_i))
+                  _print("not assigning the seat #%d because the list doesn't have any more women" % (next_woman_i))
 
 if __name__ == '__main__':
     '''
