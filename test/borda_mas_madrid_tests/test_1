@@ -13,13 +13,13 @@ Config results:
     [
         "agora_results.pipes.results.do_tallies",
         {
-            "ignore_invalid_votes": True
+            "ignore_invalid_votes": true
         }
     ],
-  [
-    "agora_results.pipes.sort.sort_non_iterative",
-    {
-      "question_indexes": [0]
-    }
-  ]
+    [
+        "agora_results.pipes.sort.sort_non_iterative",
+        {
+            "question_indexes": [0]
+        }
+    ]
 ]
