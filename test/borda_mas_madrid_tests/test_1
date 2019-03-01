@@ -1,12 +1,12 @@
 Votes: test_borda_mas_madrid_1
-A1,B1
-A1,A2
-A2
+A1m,B1m
+A1m,A2m
+A2m
 
 Results:
-A1, 12
-A2, 7
-B1, 1
+A1m, 12
+A2m, 7
+B1m, 1
 
 Config results:
 [
