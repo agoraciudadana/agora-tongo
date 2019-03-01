@@ -7,3 +7,19 @@ Results:
 A1, 12
 A2, 7
 B1, 1
+
+Config results:
+[
+    [
+        "agora_results.pipes.results.do_tallies",
+        {
+            "ignore_invalid_votes": True
+        }
+    ],
+  [
+    "agora_results.pipes.sort.sort_non_iterative",
+    {
+      "question_indexes": [0]
+    }
+  ]
+]

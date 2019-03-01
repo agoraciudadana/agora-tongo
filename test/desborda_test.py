@@ -57,7 +57,7 @@ def gen_pass(length):
   return ''.join(alphabet[c % len(alphabet)] for c in urandom(length))
 
 def make_simple_targz(output_filename, source_dir):
-    with tarfile.open(output_filename, "x:gz") as tar:
+    with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename("."))
 
 def create_temp_folder():

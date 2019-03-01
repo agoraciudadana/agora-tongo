@@ -28,21 +28,6 @@ import time
 import random
 import re
 
-tally_config_basic = [
-    [
-        "agora_results.pipes.results.do_tallies",
-        {
-            "ignore_invalid_votes": True
-        }
-    ],
-  [
-    "agora_results.pipes.sort.sort_non_iterative",
-    {
-      "question_indexes": [0]
-    }
-  ]
-]
-
 tally_config = [
     [
         "agora_results.pipes.results.do_tallies",
@@ -607,7 +592,6 @@ class TestBordaMasMadrid(unittest.TestCase):
           re.match("^test_([0-9]*)$", f) is not None]
         for testfile_path in test_files:
             data = test.desborda_test.read_testfile(testfile_path)
-            data["config"] = copy.deepcopy(tally_config_basic)
             self.do_test(test_data=data)
 
 if __name__ == '__main__':
