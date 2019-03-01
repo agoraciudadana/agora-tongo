@@ -28,6 +28,21 @@ import time
 import random
 import re
 
+tally_config_basic = [
+    [
+        "agora_results.pipes.results.do_tallies",
+        {
+            "ignore_invalid_votes": True
+        }
+    ],
+  [
+    "agora_results.pipes.sort.sort_non_iterative",
+    {
+      "question_indexes": [0]
+    }
+  ]
+]
+
 tally_config = [
     [
         "agora_results.pipes.results.do_tallies",
@@ -536,6 +551,64 @@ class TestDesBorda(unittest.TestCase):
         print("test_100k_votes_rand tally elapsed time: %f secs" % (end_time - start_time))
         # do tally
         self.assertTrue(True)
+
+class TestBordaMasMadrid(unittest.TestCase):
+    def do_test(self, test_data=None, num_questions=1, women_in_urls=False):
+        if test_data is None:
+            return
+        print("\nTest name: %s" % test_data["name"])
+        agora_results_bin_path = "python3 agora-results"
+        tally_path = test.desborda_test.create_desborda_test(test_data,
+            tally_type = "borda-mas-madrid",
+            num_questions = num_questions,
+            women_in_urls = women_in_urls)
+        try:
+            tally_targz_path = os.path.join(tally_path, "tally.tar.gz")
+            config_results_path = os.path.join(tally_path, "12345.config.results.json")
+            results_path = os.path.join(tally_path, "12345.results.json")
+            cmd = "%s -t %s -c %s -s -o json" % (
+                agora_results_bin_path,
+                tally_targz_path,
+                config_results_path)
+
+            with open(results_path, mode='w', encoding="utf-8", errors='strict') as f:
+                print(cmd)
+                subprocess.check_call(cmd, stdout=f, stderr=sys.stderr, shell=True)
+
+            for question_index in range(0, num_questions):
+                results = test.desborda_test.create_simple_results(
+                    results_path,
+                    question_index=question_index)
+
+                output_name = "output_%i" % question_index
+                file_helpers.write_file(os.path.join(tally_path, output_name), results)
+                shouldresults = test_data["output"]
+                check_results = test.desborda_test.check_results(results, shouldresults)
+
+                if not check_results:
+                    print("question index: %i\n" % question_index)
+                    print("results:\n" + results)
+                    print("shouldresults:\n" + shouldresults)
+                self.assertTrue(check_results)
+        except:
+            # remove the temp test folder if there's an error
+            file_helpers.remove_tree(tally_path)
+            raise
+        # remove the temp test folder also in a successful test
+        file_helpers.remove_tree(tally_path)
+
+    def test_all(self):
+        borda_tests_path = os.path.join("test", "borda_mas_madrid_tests")
+        # only use tests that end with a number (ie "test_5" )
+        test_files = [
+          os.path.join(borda_tests_path, f)
+          for f in os.listdir(borda_tests_path)
+          if os.path.isfile(os.path.join(borda_tests_path, f)) and
+          re.match("^test_([0-9]*)$", f) is not None]
+        for testfile_path in test_files:
+            data = test.desborda_test.read_testfile(testfile_path)
+            data["config"] = copy.deepcopy(tally_config_basic)
+            self.do_test(test_data=data)
 
 if __name__ == '__main__':
   unittest.main()
