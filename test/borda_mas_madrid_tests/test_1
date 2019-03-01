@@ -1,0 +1,9 @@
+Votes: test_borda_mas_madrid_1
+A1,B1
+A1,A2
+A2
+
+Results:
+A1, 12
+A2, 7
+B1, 1
